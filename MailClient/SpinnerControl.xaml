@@ -1,0 +1,17 @@
+﻿<UserControl 
+    x:Class="MailClient.SpinnerControl"   
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent"
+    Name="progressBar">
+    <UserControl.Resources>
+        <Storyboard x:Key="spinning" >
+            <DoubleAnimation 
+            Storyboard.TargetName="SpinnerRotate" 
+            Storyboard.TargetProperty="(RotateTransform.Angle)"                 
+            From="0" 
+            To="360"                 
+            RepeatBehavior="Forever"/>
+        </Storyboard>
+    </UserControl.Resources>
+</UserControl>
