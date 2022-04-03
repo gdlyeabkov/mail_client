@@ -28,3 +28,5 @@ C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\FilterMessagesDialog.bam
 C:\wpf_projects\MailClient\MailClient\obj\Debug\CircularProgress.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\CircularProgress.baml
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.baml

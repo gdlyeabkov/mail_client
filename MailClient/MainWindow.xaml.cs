@@ -18,6 +18,7 @@ using ImapX.Collections;
 using ImapX;
 using MaterialDesignThemes.Wpf;
 using System.Windows.Threading;
+using ImapX.Enums;
 
 namespace MailClient
 {
@@ -48,6 +49,9 @@ namespace MailClient
             List<Folder> folders = ImapService.GetFolders(debugger);
             foreach (Folder folder in folders)
             {
+
+                // Message[] messages = folder.Search("ALL", MessageFetchMode.ClientDefault, 5);
+
                 string folderTitle = folder.Name;
                 StackPanel foldersItem = new StackPanel();
                 foldersItem.Orientation = Orientation.Horizontal;
@@ -63,6 +67,14 @@ namespace MailClient
                 foldersItemLabel.Text = folderTitle;
                 foldersItemLabel.VerticalAlignment = VerticalAlignment.Center;
                 foldersItem.Children.Add(foldersItemLabel);
+                TextBlock foldersItemCountMessagesLabel = new TextBlock();
+                // MessageCollection messages = folder.Messages;
+                /*int countMessages = messages.Count();
+                String rawCountMessages = countMessages.ToString();
+                foldersItemCountMessagesLabel.VerticalAlignment = VerticalAlignment.Center;
+                foldersItemCountMessagesLabel.Margin = new Thickness(60, 0, 0, 0);
+                foldersItemCountMessagesLabel.Text = rawCountMessages;
+                foldersItem.Children.Add(foldersItemCountMessagesLabel);*/
                 emailFolders.Children.Add(foldersItem);
                 foldersItem.DataContext = folder;
                 foldersItem.MouseUp += SelectFolderHandler;
@@ -73,6 +85,9 @@ namespace MailClient
                 {
                     foreach (Folder subfolder in subFolders)
                     {
+                        
+                        Message[] messages = subfolder.Search("ALL", MessageFetchMode.ClientDefault, 5);
+
                         string subFolderTitle = subfolder.Name;
                         StackPanel subFoldersItem = new StackPanel();
                         subFoldersItem.Orientation = Orientation.Horizontal;
@@ -89,6 +104,14 @@ namespace MailClient
                         subFoldersItemLabel.Text = subFolderTitle;
                         subFoldersItemLabel.VerticalAlignment = VerticalAlignment.Center;
                         subFoldersItem.Children.Add(subFoldersItemLabel);
+                        TextBlock subFoldersItemCountMessagesLabel = new TextBlock();
+                        // messages = subfolder.Messages;
+                        int countMessages = messages.Count();
+                        string rawCountMessages = countMessages.ToString();
+                        subFoldersItemCountMessagesLabel.VerticalAlignment = VerticalAlignment.Center;
+                        subFoldersItemCountMessagesLabel.Margin = new Thickness(60, 0, 0, 0);
+                        subFoldersItemCountMessagesLabel.Text = rawCountMessages;
+                        subFoldersItem.Children.Add(subFoldersItemCountMessagesLabel);
                         emailFolders.Children.Add(subFoldersItem);
                         int subFolderIndex = subFolders.IndexOf(subfolder);
                         subFoldersItem.DataContext = subFolderIndex;
@@ -259,6 +282,19 @@ namespace MailClient
             search = "";
             OutputMessages(currentFolder, currentSubFolder);
         }
+
+        private void SendMailHandler(object sender, RoutedEventArgs e)
+        {
+            Dialogs.SendMailDialog dialog = new Dialogs.SendMailDialog();
+            dialog.Closed += RefreshMessagesHandler;
+            dialog.Show();
+        }
+
+        public void RefreshMessagesHandler(object sender, EventArgs e)
+        {
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
 
     }
 }

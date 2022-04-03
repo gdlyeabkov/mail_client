@@ -12,6 +12,18 @@
     WindowState="Maximized"
 >
     <DockPanel>
+        <Menu
+            DockPanel.Dock="Top"    
+        >
+            <MenuItem
+                Header="Почта"    
+            >
+                <MenuItem
+                    Header="Отправить почту"
+                    Click="SendMailHandler"
+                />
+            </MenuItem>
+        </Menu>
         <StackPanel
             DockPanel.Dock="Top"
             Height="35"    
