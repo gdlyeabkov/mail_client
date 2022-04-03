@@ -17,6 +17,7 @@ using System.Speech.Synthesis;
 using ImapX.Collections;
 using ImapX;
 using MaterialDesignThemes.Wpf;
+using System.Windows.Threading;
 
 namespace MailClient
 {
@@ -101,94 +102,104 @@ namespace MailClient
 
         public void OutputMessages(string folderTitle, int subFolderIndex = 1)
         {
-            int count = messages.RowDefinitions.Count;
-            if (count >= 2)
+            loader.Visibility = Visibility.Visible;
+            messages.Visibility = Visibility.Collapsed;
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            timer.Start();
+            timer.Tick += (sender, args) =>
             {
-                messages.RowDefinitions.RemoveRange(1, count - 1);
-                int counChilds = messages.Children.Count;
-                messages.Children.RemoveRange(5, counChilds - 1);
-            }
-            Message[] messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle);
-            if (folderTitle == "[Gmail]")
-            {
-                messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle, subFolderIndex);
-            }
-            foreach (Message message in messageCollection.ToList())
-            {
-                string subject = message.Subject;
-                Attachment[] attachments = message.Attachments;
-                DateTime date = ((DateTime)(message.Date));
-                List<MailAddress> to = message.To.ToList();
-                RowDefinition rowDefinition = new RowDefinition();
-                rowDefinition.Height = new GridLength(35);
-                messages.RowDefinitions.Add(rowDefinition);
-                int countMessages = messages.RowDefinitions.Count;
-                PackIcon favoriteBtn = new PackIcon();
-                favoriteBtn.Kind = PackIconKind.Star;
-                bool isSearchMatch = search == "" || (search != "" && subject.Contains(search));
-                if (isSearchMatch)
+                timer.Stop();
+                int count = messages.RowDefinitions.Count;
+                if (count >= 2)
                 {
-                    messages.Children.Add(favoriteBtn);
-                    Grid.SetRow(favoriteBtn, countMessages - 1);
-                    Grid.SetColumn(favoriteBtn, 0);
+                    messages.RowDefinitions.RemoveRange(1, count - 1);
+                    int counChilds = messages.Children.Count;
+                    messages.Children.RemoveRange(5, counChilds - 1);
                 }
-                PackIcon attachmentBtn = new PackIcon();
-                int countAttachments = attachments.Length;
-                bool isHaveAttachments = countAttachments >= 1;
-                attachmentBtn.Kind = PackIconKind.Attachment;
-                if (isHaveAttachments)
+                Message[] messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle);
+                if (folderTitle == "[Gmail]")
                 {
-                    attachmentBtn.Foreground = Brushes.Black;
+                    messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle, subFolderIndex);
                 }
-                else
+                foreach (Message message in messageCollection.ToList())
                 {
-                    attachmentBtn.Foreground = Brushes.LightGray;
-                }
-                isSearchMatch = search == "" || (search != "" && subject.Contains(search));
-                if (isSearchMatch)
-                {
-                    messages.Children.Add(attachmentBtn);
-                    Grid.SetRow(attachmentBtn, countMessages - 1);
-                    Grid.SetColumn(attachmentBtn, 1);
-                }
-                TextBlock subjectLabel = new TextBlock();
-                subjectLabel.Text = subject;
-                isSearchMatch = search == "" || (search != "" && subject.Contains(search));
-                if (isSearchMatch)
-                {
-                    messages.Children.Add(subjectLabel);
-                    Grid.SetRow(subjectLabel, countMessages - 1);
-                    Grid.SetColumn(subjectLabel, 2);
-                }
-                TextBlock toLabel = new TextBlock();
-                string toLabelContent = "";
-                foreach (MailAddress toItem in to)
-                {
-                    string address = toItem.Address;
-                    toLabelContent += address;
-                    int index = to.IndexOf(toItem);
-                    int countAdresess = to.Count;
-                    int lastIndex = countAdresess - 1;
-                    bool isNotLastIndex = index < lastIndex;
-                    if (isNotLastIndex)
+                    string subject = message.Subject;
+                    Attachment[] attachments = message.Attachments;
+                    DateTime date = ((DateTime)(message.Date));
+                    List<MailAddress> to = message.To.ToList();
+                    RowDefinition rowDefinition = new RowDefinition();
+                    rowDefinition.Height = new GridLength(35);
+                    messages.RowDefinitions.Add(rowDefinition);
+                    int countMessages = messages.RowDefinitions.Count;
+                    PackIcon favoriteBtn = new PackIcon();
+                    favoriteBtn.Kind = PackIconKind.Star;
+                    bool isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    if (isSearchMatch)
                     {
-                        toLabelContent += ", ";
+                        messages.Children.Add(favoriteBtn);
+                        Grid.SetRow(favoriteBtn, countMessages - 1);
+                        Grid.SetColumn(favoriteBtn, 0);
+                    }
+                    PackIcon attachmentBtn = new PackIcon();
+                    int countAttachments = attachments.Length;
+                    bool isHaveAttachments = countAttachments >= 1;
+                    attachmentBtn.Kind = PackIconKind.Attachment;
+                    if (isHaveAttachments)
+                    {
+                        attachmentBtn.Foreground = Brushes.Black;
+                    }
+                    else
+                    {
+                        attachmentBtn.Foreground = Brushes.LightGray;
+                    }
+                    isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    if (isSearchMatch)
+                    {
+                        messages.Children.Add(attachmentBtn);
+                        Grid.SetRow(attachmentBtn, countMessages - 1);
+                        Grid.SetColumn(attachmentBtn, 1);
+                    }
+                    TextBlock subjectLabel = new TextBlock();
+                    subjectLabel.Text = subject;
+                    isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    if (isSearchMatch)
+                    {
+                        messages.Children.Add(subjectLabel);
+                        Grid.SetRow(subjectLabel, countMessages - 1);
+                        Grid.SetColumn(subjectLabel, 2);
+                    }
+                    TextBlock toLabel = new TextBlock();
+                    string toLabelContent = "";
+                    foreach (MailAddress toItem in to)
+                    {
+                        string address = toItem.Address;
+                        toLabelContent += address;
+                        int index = to.IndexOf(toItem);
+                        int countAdresess = to.Count;
+                        int lastIndex = countAdresess - 1;
+                        bool isNotLastIndex = index < lastIndex;
+                        if (isNotLastIndex)
+                        {
+                            toLabelContent += ", ";
+                        }
+                    }
+                    toLabel.Text = toLabelContent;
+                    isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    if (isSearchMatch)
+                    {
+                        messages.Children.Add(toLabel);
+                        Grid.SetRow(toLabel, countMessages - 1);
+                        Grid.SetColumn(toLabel, 3);
+                        TextBlock dateLabel = new TextBlock();
+                        dateLabel.Text = date.ToLongDateString();
+                        messages.Children.Add(dateLabel);
+                        Grid.SetRow(dateLabel, countMessages - 1);
+                        Grid.SetColumn(dateLabel, 4);
                     }
                 }
-                toLabel.Text = toLabelContent;
-                isSearchMatch = search == "" || (search != "" && subject.Contains(search));
-                if (isSearchMatch)
-                {
-                    messages.Children.Add(toLabel);
-                    Grid.SetRow(toLabel, countMessages - 1);
-                    Grid.SetColumn(toLabel, 3);
-                    TextBlock dateLabel = new TextBlock();
-                    dateLabel.Text = date.ToLongDateString();
-                    messages.Children.Add(dateLabel);
-                    Grid.SetRow(dateLabel, countMessages - 1);
-                    Grid.SetColumn(dateLabel, 4);
-                }
-            }
+                loader.Visibility = Visibility.Collapsed;
+                messages.Visibility = Visibility.Visible;
+            };
         }
 
         public void SelectFolderHandler(object sender, MouseEventArgs e)
@@ -201,6 +212,10 @@ namespace MailClient
 
         public void SelectSubFolderHandler(object sender, MouseEventArgs e)
         {
+
+            loader.Visibility = Visibility.Visible;
+            messages.Visibility = Visibility.Collapsed;
+
             StackPanel folderItem = ((StackPanel)(sender));
             object rawFolder = folderItem.DataContext;
             int subFolderIndex = ((int)(rawFolder));

@@ -25,3 +25,6 @@ C:\wpf_projects\MailClient\MailClient\obj\Debug\SpinnerControl.baml
 C:\wpf_projects\MailClient\MailClient\obj\Debug\SpinnerControl.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\FilterMessagesDialog.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\FilterMessagesDialog.baml
+C:\wpf_projects\MailClient\MailClient\obj\Debug\CircularProgress.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\CircularProgress.baml

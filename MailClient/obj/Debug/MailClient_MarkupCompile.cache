@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 C:\wpf_projects\MailClient\MailClient\App.xaml
-3-1020912354
+4-2008982338
 
-8-1184707072
+91450777568
 171365419959
-Dialogs\FilterMessagesDialog.xaml;MainWindow.xaml;SpinnerControl.xaml;
+CircularProgress.xaml;Dialogs\FilterMessagesDialog.xaml;MainWindow.xaml;SpinnerControl.xaml;
 
 False
 

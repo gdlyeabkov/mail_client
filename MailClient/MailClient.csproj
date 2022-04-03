@@ -67,12 +67,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CircularProgress.xaml.cs">
+      <DependentUpon>CircularProgress.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\FilterMessagesDialog.xaml.cs">
       <DependentUpon>FilterMessagesDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="SpinnerControl.xaml.cs">
       <DependentUpon>SpinnerControl.xaml</DependentUpon>
     </Compile>
+    <Page Include="CircularProgress.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\FilterMessagesDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
