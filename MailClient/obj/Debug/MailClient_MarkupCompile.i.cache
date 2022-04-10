@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 C:\wpf_projects\MailClient\MailClient\App.xaml
-51796976778
+6-1993559702
 
-11-438016874
+12-50995582
 171365419959
-CircularProgress.xaml;Dialogs\FilterMessagesDialog.xaml;Dialogs\SendMailDialog.xaml;MainWindow.xaml;SpinnerControl.xaml;
+CircularProgress.xaml;Dialogs\FilterMessagesDialog.xaml;Dialogs\MessageDialog.xaml;Dialogs\SendMailDialog.xaml;MainWindow.xaml;SpinnerControl.xaml;
 
 True
 

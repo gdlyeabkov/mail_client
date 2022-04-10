@@ -30,3 +30,5 @@ C:\wpf_projects\MailClient\MailClient\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\CircularProgress.baml
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.baml
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\MessageDialog.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\MessageDialog.baml

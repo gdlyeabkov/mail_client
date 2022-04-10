@@ -73,6 +73,9 @@
     <Compile Include="Dialogs\FilterMessagesDialog.xaml.cs">
       <DependentUpon>FilterMessagesDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\SendMailDialog.xaml.cs">
       <DependentUpon>SendMailDialog.xaml</DependentUpon>
     </Compile>
@@ -84,6 +87,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialogs\FilterMessagesDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\MessageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

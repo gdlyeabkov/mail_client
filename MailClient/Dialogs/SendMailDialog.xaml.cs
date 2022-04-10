@@ -22,9 +22,17 @@ namespace MailClient.Dialogs
     /// </summary>
     public partial class SendMailDialog : Window
     {
-        public SendMailDialog()
+        public SendMailDialog(string recepient)
         {
             InitializeComponent();
+
+            Initialize(recepient);
+
+        }
+
+        public void Initialize(string recepient)
+        {
+            recepientBox.Text = recepient;
         }
 
         private void SendMailHandler(object sender, RoutedEventArgs e)

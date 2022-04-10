@@ -133,14 +133,16 @@ namespace MailClient
             {
                 timer.Stop();
                 int count = messages.RowDefinitions.Count;
-                if (count >= 2)
+                bool isHaveMessages = count >= 2;
+                if (isHaveMessages)
                 {
                     messages.RowDefinitions.RemoveRange(1, count - 1);
                     int counChilds = messages.Children.Count;
                     messages.Children.RemoveRange(5, counChilds - 1);
                 }
                 Message[] messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle);
-                if (folderTitle == "[Gmail]")
+                bool isGmailFolder = folderTitle == "[Gmail]";
+                if (isGmailFolder)
                 {
                     messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle, subFolderIndex);
                 }
@@ -148,7 +150,8 @@ namespace MailClient
                 {
                     string subject = message.Subject;
                     Attachment[] attachments = message.Attachments;
-                    DateTime date = ((DateTime)(message.Date));
+                    DateTime? possibleDate = message.Date;
+                    DateTime date = ((DateTime)(possibleDate));
                     List<MailAddress> to = message.To.ToList();
                     RowDefinition rowDefinition = new RowDefinition();
                     rowDefinition.Height = new GridLength(35);
@@ -156,7 +159,9 @@ namespace MailClient
                     int countMessages = messages.RowDefinitions.Count;
                     PackIcon favoriteBtn = new PackIcon();
                     favoriteBtn.Kind = PackIconKind.Star;
-                    bool isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    bool isSearchNotExists = search == "";
+                    bool isSetSearch = search != "" && subject.Contains(search);
+                    bool isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
                         messages.Children.Add(favoriteBtn);
@@ -170,12 +175,21 @@ namespace MailClient
                     if (isHaveAttachments)
                     {
                         attachmentBtn.Foreground = Brushes.Black;
+                        ContextMenu attachmentBtnContextMenu = new ContextMenu();
+                        MenuItem attachmentBtnContextMenuItem = new MenuItem();
+                        attachmentBtnContextMenuItem.Header = "Скачать";
+                        attachmentBtnContextMenuItem.DataContext = attachments;
+                        attachmentBtnContextMenuItem.Click += DownloadAttachmentsHandler;
+                        attachmentBtnContextMenu.Items.Add(attachmentBtnContextMenuItem);
+                        attachmentBtn.ContextMenu = attachmentBtnContextMenu;
                     }
                     else
                     {
                         attachmentBtn.Foreground = Brushes.LightGray;
                     }
-                    isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    isSearchNotExists = search == "";
+                    isSetSearch = search != "" && subject.Contains(search);
+                    isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
                         messages.Children.Add(attachmentBtn);
@@ -190,6 +204,8 @@ namespace MailClient
                         messages.Children.Add(subjectLabel);
                         Grid.SetRow(subjectLabel, countMessages - 1);
                         Grid.SetColumn(subjectLabel, 2);
+                        subjectLabel.DataContext = message;
+                        subjectLabel.MouseLeftButtonUp += OpenMessageDialogHandler;
                     }
                     TextBlock toLabel = new TextBlock();
                     string toLabelContent = "";
@@ -207,7 +223,9 @@ namespace MailClient
                         }
                     }
                     toLabel.Text = toLabelContent;
-                    isSearchMatch = search == "" || (search != "" && subject.Contains(search));
+                    isSearchNotExists = search == "";
+                    isSetSearch = search != "" && subject.Contains(search);
+                    isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
                         messages.Children.Add(toLabel);
@@ -223,6 +241,35 @@ namespace MailClient
                 loader.Visibility = Visibility.Collapsed;
                 messages.Visibility = Visibility.Visible;
             };
+        }
+
+        public void DownloadAttachmentHandler (object sender, RoutedEventArgs e)
+        {
+            StackPanel attachmentWrap = ((StackPanel)(sender));
+            object attachmentWrapData = attachmentWrap.DataContext;
+            Attachment attachment = ((Attachment)(attachmentWrapData));
+            DownloadAttachment(attachment);
+        }
+
+        public void DownloadAttachment (Attachment attachment)
+        {
+            attachment.Download();
+        }
+
+        public void DownloadAttachmentsHandler (object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = ((MenuItem)(sender));
+            object menuItemData = menuItem.DataContext;
+            Attachment[] attachments = ((Attachment[])(menuItemData));
+            DownloadAttachments(attachments);
+        }
+
+        public void DownloadAttachments (Attachment[] attachments)
+        {
+            foreach (Attachment attachment in attachments)
+            {
+                attachment.Download();
+            }
         }
 
         public void SelectFolderHandler(object sender, MouseEventArgs e)
@@ -285,7 +332,7 @@ namespace MailClient
 
         private void SendMailHandler(object sender, RoutedEventArgs e)
         {
-            Dialogs.SendMailDialog dialog = new Dialogs.SendMailDialog();
+            Dialogs.SendMailDialog dialog = new Dialogs.SendMailDialog("");
             dialog.Closed += RefreshMessagesHandler;
             dialog.Show();
         }
@@ -295,6 +342,85 @@ namespace MailClient
             OutputMessages(currentFolder, currentSubFolder);
         }
 
+        public void OpenMessageDialogHandler(object sender, RoutedEventArgs e)
+        {
+            TextBlock subject = ((TextBlock)(sender));
+            object subjectData = subject.DataContext;
+            Message msg = ((Message)(subjectData));
+            OpenMessageDialog(msg);
+        }
+
+        public void OpenMessageDialog (Message msg)
+        {
+            /*
+            Dialogs.MessageDialog dialog = new Dialogs.MessageDialog(msg);
+            dialog.Show();
+            */
+            article.SelectedIndex = 1;
+            msgDetailSubjectLabel.Text = msg.Subject;
+            MailAddress from = msg.From;
+            string fromAddress = from.Address;
+            msgDetailFromLabel.Text = fromAddress;
+            DateTime? possibleMsgDate = msg.Date;
+            bool isMsgDateExists = possibleMsgDate != null;
+            if (isMsgDateExists)
+            {
+                DateTime msgDate = ((DateTime)(possibleMsgDate));
+                string rawMsgDate = msgDate.ToLongDateString();
+                msgDetailDateLabel.Text = rawMsgDate;
+            }
+            MessageBody msgBody = msg.Body;
+            msgDetailContentLabel.Text = msgBody.Text;
+            foreach (Attachment attachment in msg.Attachments) {
+                Border msgDetailAttachmentBorder = new Border();
+                msgDetailAttachmentBorder.BorderBrush = System.Windows.Media.Brushes.Black;
+                msgDetailAttachmentBorder.BorderThickness = new Thickness(1);
+                msgDetailAttachmentBorder.Margin = new Thickness(15);
+                StackPanel msgDetailAttachment = new StackPanel();
+                msgDetailAttachment.Width = 100;
+                msgDetailAttachment.Height = 100;
+                msgDetailAttachment.Margin = new Thickness(15);
+                PackIcon msgDetailAttachmentDownloadIcon = new PackIcon();
+                msgDetailAttachmentDownloadIcon.Margin = new Thickness(15);
+                msgDetailAttachmentDownloadIcon.Width = 24;
+                msgDetailAttachmentDownloadIcon.Height = 24;
+                msgDetailAttachmentDownloadIcon.Kind = PackIconKind.Download;
+                msgDetailAttachmentDownloadIcon.HorizontalAlignment = HorizontalAlignment.Center;
+                msgDetailAttachment.Children.Add(msgDetailAttachmentDownloadIcon);
+                string msgDetailAttachmentName = attachment.FileName;
+                TextBlock msgDetailAttachmentNameLabel = new TextBlock();
+                msgDetailAttachmentNameLabel.TextAlignment = TextAlignment.Center;
+                msgDetailAttachmentNameLabel.TextWrapping = TextWrapping.Wrap;
+                msgDetailAttachmentNameLabel.Text = msgDetailAttachmentName;
+                msgDetailAttachment.Children.Add(msgDetailAttachmentNameLabel);
+                msgDetailAttachmentBorder.Child = msgDetailAttachment;
+                msgDetailAttachments.Children.Add(msgDetailAttachmentBorder);
+                msgDetailAttachment.DataContext = attachment;
+                msgDetailAttachment.MouseLeftButtonDown += DownloadAttachmentHandler;
+            }
+        }
+
+        private void BackToMessagesListHandler(object sender, MouseButtonEventArgs e)
+        {
+            BackToMessagesList();
+        }
+
+        public void BackToMessagesList()
+        {
+            article.SelectedIndex = 0;
+        }
+
+        private void ReplyHandler(object sender, RoutedEventArgs e)
+        {
+            Reply();
+        }
+
+        public void Reply ()
+        {
+            string msgDetailFromLabelContent = msgDetailFromLabel.Text;
+            Dialogs.SendMailDialog dialog = new Dialogs.SendMailDialog(msgDetailFromLabelContent);
+            dialog.Show();
+        }
 
     }
 }
