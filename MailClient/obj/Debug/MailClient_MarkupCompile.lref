@@ -1,8 +1,10 @@
 ﻿
 
-FC:\wpf_projects\MailClient\MailClient\MainWindow.xaml;;
-FC:\wpf_projects\MailClient\MailClient\Dialogs\FilterMessagesDialog.xaml;;
 FC:\wpf_projects\MailClient\MailClient\CircularProgress.xaml;;
-FC:\wpf_projects\MailClient\MailClient\Dialogs\SendMailDialog.xaml;;
+FC:\wpf_projects\MailClient\MailClient\Dialogs\FilterMessagesDialog.xaml;;
+FC:\wpf_projects\MailClient\MailClient\Dialogs\LoginWindow.xaml;;
 FC:\wpf_projects\MailClient\MailClient\Dialogs\MessageDialog.xaml;;
+FC:\wpf_projects\MailClient\MailClient\Dialogs\ProgressDialog.xaml;;
+FC:\wpf_projects\MailClient\MailClient\Dialogs\SendMailDialog.xaml;;
+FC:\wpf_projects\MailClient\MailClient\MainWindow.xaml;;
 

@@ -9,33 +9,159 @@
         Height="450"
         Width="800"
     >
-    <DockPanel>
-        <StackPanel>
-            <TextBox
-                x:Name="recepientBox"
-                Margin="5"
-                Height="25"
-                Width="500"
-            />
-            <TextBox
-                x:Name="subjectBox"
-                Margin="5"
-                Height="25"
-                Width="500"
-            />
-            <TextBox
-                x:Name="messageBodyBox"
-                Margin="5"
-                Height="250"
-                Width="350"
-            />
-            <Button
-                Margin="5"
-                Width="75"
-                Height="25"
-                Content="Отправить"    
-                Click="SendMailHandler"
-            />
-        </StackPanel>
-    </DockPanel>
+    <ScrollViewer>
+        <DockPanel>
+            <StackPanel
+                HorizontalAlignment="Left"    
+            >
+                <TextBox
+                    x:Name="recepientBox"
+                    Margin="25 5"
+                    Height="25"
+                    Width="500"
+                >
+                    <TextBox.Resources>
+                        <VisualBrush
+                                x:Key="hinttext"
+                                AlignmentX="Left"
+                                Stretch="None"
+                                TileMode="None"
+                            >
+                            <VisualBrush.Visual>
+                                <TextBlock
+                                    Text="Получатели"
+                                    Foreground="#959595"
+                                    Background="White"
+                                />
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Resources>
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                                <Trigger Property="Text" Value="{x:Null}">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                <TextBox
+                    x:Name="subjectBox"
+                    Margin="25 5"
+                    Height="25"
+                    Width="500"
+                >
+                    <TextBox.Resources>
+                        <VisualBrush
+                                x:Key="hinttext"
+                                AlignmentX="Left"
+                                Stretch="None"
+                                TileMode="None"
+                            >
+                            <VisualBrush.Visual>
+                                <TextBlock
+                                    Text="Тема"
+                                    Foreground="#959595"
+                                    Background="White"
+                                />
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Resources>
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                                <Trigger Property="Text" Value="{x:Null}">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                <TextBox
+                    x:Name="messageBodyBox"
+                    Margin="25 5"
+                    Height="250"
+                    TextAlignment="Left"
+                >
+                    <TextBox.Resources>
+                        <VisualBrush
+                            x:Key="hinttext"
+                            AlignmentX="Left"
+                            Stretch="None"
+                            TileMode="None"
+                            AlignmentY="Top"
+                        >
+                            <VisualBrush.Visual>
+                                <TextBlock
+                                    Text="Текст"
+                                    Foreground="#959595"
+                                    Background="White"
+                                    VerticalAlignment="Top"
+                                />
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </TextBox.Resources>
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="VerticalAlignment" Value="Top" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Setter Property="Width" Value="Auto" />
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                                <Trigger Property="Text" Value="{x:Null}">
+                                    <Setter Property="Background" Value="{StaticResource hinttext}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                <DockPanel
+                    Height="75"
+                >
+                    <ScrollViewer
+                        DockPanel.Dock="Left"
+                        Width="500"
+                    >
+                        <StackPanel
+                            x:Name="attachments"
+                            Margin="10"
+                        />
+                    </ScrollViewer>
+                    <Button
+                        x:Name="attachBtn"
+                        Margin="35 5"
+                        Width="75"
+                        Height="25"
+                        Content="Обзор"    
+                        Click="BrowseAttachmentHandler"
+                    />
+                </DockPanel>
+                <Button
+                    Margin="5"
+                    Width="75"
+                    Height="25"
+                    Content="Отправить"    
+                    Click="SendMailHandler"
+                />
+            </StackPanel>
+        </DockPanel>
+    </ScrollViewer>
 </Window>

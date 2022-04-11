@@ -32,3 +32,7 @@ C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\SendMailDialog.baml
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\MessageDialog.g.cs
 C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\MessageDialog.baml
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\LoginWindow.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\LoginWindow.baml
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\ProgressDialog.g.cs
+C:\wpf_projects\MailClient\MailClient\obj\Debug\Dialogs\ProgressDialog.baml

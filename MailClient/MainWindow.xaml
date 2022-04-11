@@ -10,6 +10,7 @@
     Height="450"
     Width="800"
     WindowState="Maximized"
+    Loaded="InitializeHandler"
 >
     <DockPanel>
         <Menu
@@ -173,10 +174,14 @@
                         Text="Текст сообщения"
                         Margin="5"
                     />
-                    <StackPanel
-                        x:Name="msgDetailAttachments"    
-                        Orientation="Horizontal"    
-                    />
+                    <ScrollViewer
+                        HorizontalScrollBarVisibility="Visible"    
+                    >
+                        <StackPanel
+                            x:Name="msgDetailAttachments"    
+                            Orientation="Horizontal"    
+                        />
+                    </ScrollViewer>
                 </StackPanel>
             </TabItem>
         </TabControl>

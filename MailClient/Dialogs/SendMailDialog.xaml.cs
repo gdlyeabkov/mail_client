@@ -73,6 +73,13 @@ namespace MailClient.Dialogs
                 smtp.UseDefaultCredentials = false;
                 smtp.Credentials = new NetworkCredential("glebdyakov2000@gmail.com", "ttolpqpdzbigrkhz");
                 smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                foreach (TextBlock attachmentsItem in attachments.Children)
+                {
+                    object attachmentsItemData = attachmentsItem.DataContext;
+                    string attachmentData = ((string)(attachmentsItemData));
+                    Attachment attachment = new Attachment(attachmentData);
+                    message.Attachments.Add(attachment);
+                }
                 smtp.Send(message);
                 this.Close();
             }
@@ -81,5 +88,33 @@ namespace MailClient.Dialogs
             }
         }
 
+        public void BrowseAttachment ()
+        {
+            Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();
+            ofd.Title = "Выберите прикепленный файл";
+            // ofd.Filter = "Png documents (.png)|*.png";
+            ofd.Filter = "Text documents (.txt)|*.txt";
+            ofd.Multiselect = true;
+            bool? res = ofd.ShowDialog();
+            bool isOpened = res != false;
+            if (isOpened)
+            {
+                foreach (string path in ofd.FileNames)
+                {
+                    string attachmentName = System.IO.Path.GetFileName(path);
+                    TextBlock attachment = new TextBlock();
+                    attachment.Margin = new Thickness(10, 0, 10, 0);
+                    attachment.Text = attachmentName;
+                    attachment.DataContext = path;
+                    attachments.Children.Add(attachment);
+                }
+                attachBtn.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void BrowseAttachmentHandler (object sender, RoutedEventArgs e)
+        {
+            BrowseAttachment();
+        }
     }
 }

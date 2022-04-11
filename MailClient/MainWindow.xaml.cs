@@ -19,6 +19,7 @@ using ImapX;
 using MaterialDesignThemes.Wpf;
 using System.Windows.Threading;
 using ImapX.Enums;
+// using System.Windows.Forms;
 
 namespace MailClient
 {
@@ -32,13 +33,10 @@ namespace MailClient
         public string search = "";
         public string currentFolder = "[Gmail]";
         public int currentSubFolder = 1;
-
+        
         public MainWindow()
         {
             InitializeComponent();
-
-            Initialize();
-        
         }
 
         public void Initialize()
@@ -240,6 +238,7 @@ namespace MailClient
                 }
                 loader.Visibility = Visibility.Collapsed;
                 messages.Visibility = Visibility.Visible;
+                this.Cursor = Cursors.Arrow;
             };
         }
 
@@ -253,7 +252,16 @@ namespace MailClient
 
         public void DownloadAttachment (Attachment attachment)
         {
-            attachment.Download();
+            System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
+            System.Windows.Forms.DialogResult res = fbd.ShowDialog();
+            System.Windows.Forms.DialogResult dialogOkResult = System.Windows.Forms.DialogResult.OK;
+            bool isPathSelected = res == dialogOkResult;
+            if (isPathSelected)
+            {
+                string selectedPath = fbd.SelectedPath;
+                attachment.Download();
+                attachment.Save(selectedPath);
+            }
         }
 
         public void DownloadAttachmentsHandler (object sender, RoutedEventArgs e)
@@ -266,9 +274,19 @@ namespace MailClient
 
         public void DownloadAttachments (Attachment[] attachments)
         {
-            foreach (Attachment attachment in attachments)
+
+            System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
+            System.Windows.Forms.DialogResult res = fbd.ShowDialog();
+            System.Windows.Forms.DialogResult dialogOkResult = System.Windows.Forms.DialogResult.OK;
+            bool isPathSelected = res == dialogOkResult;
+            if (isPathSelected)
             {
-                attachment.Download();
+                string selectedPath = fbd.SelectedPath;
+                foreach (Attachment attachment in attachments)
+                {
+                    attachment.Download();
+                    attachment.Save(selectedPath);
+                }
             }
         }
 
@@ -285,6 +303,7 @@ namespace MailClient
 
             loader.Visibility = Visibility.Visible;
             messages.Visibility = Visibility.Collapsed;
+            this.Cursor = Cursors.Wait;
 
             StackPanel folderItem = ((StackPanel)(sender));
             object rawFolder = folderItem.DataContext;
@@ -420,6 +439,11 @@ namespace MailClient
             string msgDetailFromLabelContent = msgDetailFromLabel.Text;
             Dialogs.SendMailDialog dialog = new Dialogs.SendMailDialog(msgDetailFromLabelContent);
             dialog.Show();
+        }
+
+        private void InitializeHandler(object sender, RoutedEventArgs e)
+        {
+            Initialize();
         }
 
     }
