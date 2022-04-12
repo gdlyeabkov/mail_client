@@ -32,10 +32,6 @@ namespace MailClient
             worker.DoWork += DownloadFolderHandler;
         }
 
-        /*public static bool Login(string u, string p)
-        {
-            returnclient.Login(u, p);
-        }*/
         public static void Logout()
         {
             // Remove the login value from the client.  
@@ -56,7 +52,6 @@ namespace MailClient
             }
             // Before returning start the idling  
 
-            Login("glebdyakov2000@gmail.com", "ttolpqpdzbigrkhz");
             if (client.IsAuthenticated)
             {
                 // client.Folders.Inbox.StartIdling(); // And continue to listen for more.  
@@ -80,14 +75,14 @@ namespace MailClient
         public static Message[] MessageCollectionGetMessagesForFolder(string name, int subFolderIndex = 1)
         {
             var clientFolders = client.Folders;
-            var messages = clientFolders["INBOX"].Search("ALL", MessageFetchMode.ClientDefault, 5);
+            var messages = clientFolders["INBOX"].Search("ALL", MessageFetchMode.ClientDefault, 15);
             bool isGmailFolder = name == "[Gmail]";
             if (isGmailFolder)
             {
                 var gmailFolder = clientFolders["[Gmail]"];
                 var gmailSubFolders = gmailFolder.SubFolders;
                 Folder subFolder = gmailSubFolders[subFolderIndex];
-                messages = subFolder.Search("ALL", MessageFetchMode.ClientDefault, 5);
+                messages = subFolder.Search("ALL", MessageFetchMode.ClientDefault, 15);
             }
             return messages;
         }

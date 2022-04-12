@@ -19,6 +19,8 @@ using ImapX;
 using MaterialDesignThemes.Wpf;
 using System.Windows.Threading;
 using ImapX.Enums;
+using System.Web.Script.Serialization;
+using System.IO;
 // using System.Windows.Forms;
 
 namespace MailClient
@@ -33,7 +35,9 @@ namespace MailClient
         public string search = "";
         public string currentFolder = "[Gmail]";
         public int currentSubFolder = 1;
-        
+        public int currentMsgIndex = 0;
+        public bool isPagesSelectorInit = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -84,7 +88,7 @@ namespace MailClient
                     foreach (Folder subfolder in subFolders)
                     {
                         
-                        Message[] messages = subfolder.Search("ALL", MessageFetchMode.ClientDefault, 5);
+                        Message[] messages = subfolder.Search("ALL", MessageFetchMode.ClientDefault, 15);
 
                         string subFolderTitle = subfolder.Name;
                         StackPanel subFoldersItem = new StackPanel();
@@ -93,6 +97,36 @@ namespace MailClient
                         subFoldersItem.Margin = new Thickness(25, 0, 0, 0);
                         PackIcon subFoldersItemIcon = new PackIcon();
                         subFoldersItemIcon.Kind = PackIconKind.Email;
+                        bool isNecessarilySubFolder = subFolderTitle == "Важное";
+                        bool isBucketSubFolder = subFolderTitle == "Корзина";
+                        bool isSendSubFolder = subFolderTitle == "Отправленные";
+                        bool isBookmarkSubFolder = subFolderTitle == "Помеченные";
+                        bool isSpamSubFolder = subFolderTitle == "Спам";
+                        bool isNoteSubFolder = subFolderTitle == "Черновики";
+                        if (isNecessarilySubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Warning;
+                        }
+                        else if (isBucketSubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Bucket;
+                        }
+                        else if (isSendSubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Send;
+                        }
+                        else if (isBookmarkSubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Bookmark;
+                        }
+                        else if (isSpamSubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Ads;
+                        }
+                        else if (isNoteSubFolder)
+                        {
+                            subFoldersItemIcon.Kind = PackIconKind.Note;
+                        }
                         subFoldersItemIcon.Width = 24;
                         subFoldersItemIcon.Height = 24;
                         subFoldersItemIcon.Margin = new Thickness(5, 0, 5, 0);
@@ -124,7 +158,7 @@ namespace MailClient
         public void OutputMessages(string folderTitle, int subFolderIndex = 1)
         {
             loader.Visibility = Visibility.Visible;
-            messages.Visibility = Visibility.Collapsed;
+            messagesWrap.Visibility = Visibility.Collapsed;
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
             timer.Start();
             timer.Tick += (sender, args) =>
@@ -144,6 +178,11 @@ namespace MailClient
                 {
                     messageCollection = ImapService.MessageCollectionGetMessagesForFolder(folderTitle, subFolderIndex);
                 }
+
+                // pages.Children.Clear();
+                // pagesSelector.Items.Clear();
+                bool isPagesSelectorNotInit = false;
+
                 foreach (Message message in messageCollection.ToList())
                 {
                     string subject = message.Subject;
@@ -151,20 +190,70 @@ namespace MailClient
                     DateTime? possibleDate = message.Date;
                     DateTime date = ((DateTime)(possibleDate));
                     List<MailAddress> to = message.To.ToList();
-                    RowDefinition rowDefinition = new RowDefinition();
-                    rowDefinition.Height = new GridLength(35);
-                    messages.RowDefinitions.Add(rowDefinition);
+
+                    List<Message> messageListCollection = messageCollection.ToList();
+                    int msgIndex = messageListCollection.IndexOf(message);
+                    int startMsgIndex = currentMsgIndex - 4;
+                    int endMsgIndex = currentMsgIndex;
+                    bool isStartIndexMatch = msgIndex >= startMsgIndex;
+                    bool isEndIndexMatch = msgIndex <= endMsgIndex;
+                    bool isMsgMatch = isStartIndexMatch && isEndIndexMatch;
+                    if (isMsgMatch)
+                    {
+                        RowDefinition rowDefinition = new RowDefinition();
+                        rowDefinition.Height = new GridLength(35);
+                        messages.RowDefinitions.Add(rowDefinition);
+                    }
+
                     int countMessages = messages.RowDefinitions.Count;
                     PackIcon favoriteBtn = new PackIcon();
+                    
+                    MessageBody messageBody = message.Body;
+                    string messageBodyContent = messageBody.Text;
+
+                    Environment.SpecialFolder localApplicationDataFolder = Environment.SpecialFolder.LocalApplicationData;
+                    string localApplicationDataFolderPath = Environment.GetFolderPath(localApplicationDataFolder);
+                    string saveDataFilePath = localApplicationDataFolderPath + @"\OfficeWare\MailClient\save-data.txt";
+                    string cachePath = localApplicationDataFolderPath + @"\OfficeWare\MailClient";
+                    bool isCacheFolderExists = Directory.Exists(cachePath);
+                    bool isCacheFolderNotExists = !isCacheFolderExists;
+                    if (isCacheFolderNotExists)
+                    {
+                        Directory.CreateDirectory(cachePath);
+                        using (Stream s = File.Open(saveDataFilePath, FileMode.OpenOrCreate))
+                        {
+                            using (StreamWriter sw = new StreamWriter(s))
+                            {
+                                sw.Write("");
+                            }
+                        };
+                    }
+                    JavaScriptSerializer js = new JavaScriptSerializer();
+                    string rawLoadedContent = File.ReadAllText(saveDataFilePath);
+                    SavedContent loadedContent = js.Deserialize<SavedContent>(rawLoadedContent);
+                    bool isLoadedContentExists = loadedContent != null;
+                    if (isLoadedContentExists)
+                    {
+                        bool isMarkAsFavorite = loadedContent.favorites.Contains(messageBodyContent);
+                        if (isMarkAsFavorite)
+                        {
+                            favoriteBtn.Foreground = System.Windows.Media.Brushes.Orange;
+                        }
+                    }
                     favoriteBtn.Kind = PackIconKind.Star;
+                    favoriteBtn.DataContext = messageBodyContent;
+                    favoriteBtn.MouseLeftButtonUp += MarkMessageAsFavoriteHandler;
                     bool isSearchNotExists = search == "";
                     bool isSetSearch = search != "" && subject.Contains(search);
                     bool isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
-                        messages.Children.Add(favoriteBtn);
-                        Grid.SetRow(favoriteBtn, countMessages - 1);
-                        Grid.SetColumn(favoriteBtn, 0);
+                        if (messageCollection.ToList().IndexOf(message) >= currentMsgIndex - 4 && messageCollection.ToList().IndexOf(message) <= currentMsgIndex)
+                        {
+                            messages.Children.Add(favoriteBtn);
+                            Grid.SetRow(favoriteBtn, countMessages - 1);
+                            Grid.SetColumn(favoriteBtn, 0);
+                        }
                     }
                     PackIcon attachmentBtn = new PackIcon();
                     int countAttachments = attachments.Length;
@@ -190,20 +279,26 @@ namespace MailClient
                     isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
-                        messages.Children.Add(attachmentBtn);
-                        Grid.SetRow(attachmentBtn, countMessages - 1);
-                        Grid.SetColumn(attachmentBtn, 1);
+                        if (isMsgMatch)
+                        {
+                            messages.Children.Add(attachmentBtn);
+                            Grid.SetRow(attachmentBtn, countMessages - 1);
+                            Grid.SetColumn(attachmentBtn, 1);
+                        }
                     }
                     TextBlock subjectLabel = new TextBlock();
                     subjectLabel.Text = subject;
                     isSearchMatch = search == "" || (search != "" && subject.Contains(search));
                     if (isSearchMatch)
                     {
-                        messages.Children.Add(subjectLabel);
-                        Grid.SetRow(subjectLabel, countMessages - 1);
-                        Grid.SetColumn(subjectLabel, 2);
-                        subjectLabel.DataContext = message;
-                        subjectLabel.MouseLeftButtonUp += OpenMessageDialogHandler;
+                        if (isMsgMatch)
+                        {
+                            messages.Children.Add(subjectLabel);
+                            Grid.SetRow(subjectLabel, countMessages - 1);
+                            Grid.SetColumn(subjectLabel, 2);
+                            subjectLabel.DataContext = message;
+                            subjectLabel.MouseLeftButtonUp += OpenMessageDialogHandler;
+                        }
                     }
                     TextBlock toLabel = new TextBlock();
                     string toLabelContent = "";
@@ -226,19 +321,48 @@ namespace MailClient
                     isSearchMatch = isSearchNotExists || isSetSearch;
                     if (isSearchMatch)
                     {
-                        messages.Children.Add(toLabel);
-                        Grid.SetRow(toLabel, countMessages - 1);
-                        Grid.SetColumn(toLabel, 3);
-                        TextBlock dateLabel = new TextBlock();
-                        dateLabel.Text = date.ToLongDateString();
-                        messages.Children.Add(dateLabel);
-                        Grid.SetRow(dateLabel, countMessages - 1);
-                        Grid.SetColumn(dateLabel, 4);
+                        if (isMsgMatch)
+                        {
+                            messages.Children.Add(toLabel);
+                            Grid.SetRow(toLabel, countMessages - 1);
+                            Grid.SetColumn(toLabel, 3);
+                            TextBlock dateLabel = new TextBlock();
+                            dateLabel.Text = date.ToLongDateString();
+                            dateLabel.TextAlignment = TextAlignment.Center;
+                            messages.Children.Add(dateLabel);
+                            Grid.SetRow(dateLabel, countMessages - 1);
+                            Grid.SetColumn(dateLabel, 4);
+                        }
                     }
+                    int msgNum = msgIndex + 1;
+                    double remainder = msgNum % 5;
+                    bool isLastMsgOfPage = remainder == 0;
+                    if (isLastMsgOfPage)
+                    {
+                        isPagesSelectorNotInit = !isPagesSelectorInit;
+                        if (isPagesSelectorNotInit)
+                        {
+                            ComboBoxItem pagesSelectorItem = new ComboBoxItem();
+                            pagesSelectorItem.Content = (messageCollection.ToList().IndexOf(message) - 3).ToString() + "-" + (messageCollection.ToList().IndexOf(message) + 1).ToString();
+                            pagesSelectorItem.DataContext = ((int)(messageCollection.ToList().IndexOf(message)));
+                            pagesSelector.Items.Add(pagesSelectorItem);
+                        }
+                    }
+
                 }
                 loader.Visibility = Visibility.Collapsed;
-                messages.Visibility = Visibility.Visible;
+                messagesWrap.Visibility = Visibility.Visible;
                 this.Cursor = Cursors.Arrow;
+                isPagesSelectorNotInit = !isPagesSelectorInit;
+                ItemCollection pagesSelectorItems = pagesSelector.Items;
+                int pagesSelectorItemsCount = pagesSelectorItems.Count;
+                bool isPagesExists = pagesSelectorItemsCount >= 1;
+                bool isNeedPagesSelectorInit = isPagesExists && isPagesSelectorNotInit;
+                if (isNeedPagesSelectorInit) 
+                {
+                    pagesSelector.SelectedIndex = 0;
+                    isPagesSelectorInit = true;
+                }
             };
         }
 
@@ -302,7 +426,7 @@ namespace MailClient
         {
 
             loader.Visibility = Visibility.Visible;
-            messages.Visibility = Visibility.Collapsed;
+            messagesWrap.Visibility = Visibility.Collapsed;
             this.Cursor = Cursors.Wait;
 
             StackPanel folderItem = ((StackPanel)(sender));
@@ -446,5 +570,75 @@ namespace MailClient
             Initialize();
         }
 
+        public void MarkMessageAsFavoriteHandler (object sender, RoutedEventArgs e)
+        {
+            PackIcon favoriteBtn = ((PackIcon)(sender));
+            object favoriteBtnData = favoriteBtn.DataContext;
+            string msgContent = ((string)(favoriteBtnData));
+            MarkMessageAsFavorite(msgContent, favoriteBtn);
+        }
+
+        public void MarkMessageAsFavorite (string msgContent, PackIcon favoriteBtn)
+        {
+            Environment.SpecialFolder localApplicationDataFolder = Environment.SpecialFolder.LocalApplicationData;
+            string localApplicationDataFolderPath = Environment.GetFolderPath(localApplicationDataFolder);
+            string saveDataFilePath = localApplicationDataFolderPath + @"\OfficeWare\MailClient\save-data.txt";
+
+            JavaScriptSerializer js = new JavaScriptSerializer();
+            string rawLoadedContent = File.ReadAllText(saveDataFilePath);
+            SavedContent loadedContent = js.Deserialize<SavedContent>(rawLoadedContent);
+            List<string> loadedContentFavorites;
+            SavedContent savedContent = new SavedContent() {
+                favorites = new List<string>()
+            };
+            if (loadedContent == null)
+            {
+                loadedContentFavorites = new List<string>();
+                savedContent.favorites = loadedContentFavorites;
+            }
+            else
+            {
+                loadedContentFavorites = loadedContent.favorites;
+                savedContent.favorites = loadedContentFavorites;
+                bool isMarkAsFavorite = loadedContent.favorites.Contains(msgContent);
+                if (isMarkAsFavorite)
+                {
+                    favoriteBtn.Foreground = System.Windows.Media.Brushes.Black;
+                    // savedContent.favorites.Remove(msgContent);
+                    savedContent.favorites = savedContent.favorites.Where<string>((string content) =>
+                    {
+                        return content != msgContent;
+                    }).ToList<string>();
+                }
+                else
+                {
+                    favoriteBtn.Foreground = System.Windows.Media.Brushes.Orange; 
+                    savedContent.favorites.Add(msgContent);
+                }
+            }
+            string rawSavedContent = js.Serialize(savedContent);
+            File.WriteAllText(saveDataFilePath, rawSavedContent);
+        }
+
+        private void UpdatePageHandler(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem pagesSelectorItem = ((ComboBoxItem)(pagesSelector.Items[pagesSelector.SelectedIndex]));
+            object pagesSelectorItemData = pagesSelectorItem.DataContext;
+            int msgIndex = ((int)(pagesSelectorItemData));
+            UpdatePage(msgIndex);
+        }
+
+        public void UpdatePage(int msgIndex)
+        {
+            currentMsgIndex = msgIndex;
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
     }
+
+    public class SavedContent
+    {
+        public List<string> favorites;
+    }
+
 }

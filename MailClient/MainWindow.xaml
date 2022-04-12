@@ -29,6 +29,7 @@
             DockPanel.Dock="Top"
             Height="35"    
             Orientation="Horizontal"
+            Margin="5"
         >
             <ToggleButton
                 Checked="OpenFilterMessagesHandler"
@@ -54,7 +55,7 @@
             x:Name="emailFolders"
             DockPanel.Dock="Left"
             Width="200"
-            Background="Red"
+            Background="LightGray"
         >
         </StackPanel>
         <TabControl
@@ -64,54 +65,73 @@
             <TabItem
                 Visibility="Collapsed"        
             >
-                <Grid
-                    x:Name="messages"
+                <StackPanel
+                    x:Name="messagesWrap"    
                     Visibility="Collapsed"
                 >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition
-                            Width="25"    
+                    <Grid
+                        x:Name="messages"
+                    >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition
+                                Width="25"    
+                            />
+                            <ColumnDefinition
+                                Width="25"    
+                            />
+                            <ColumnDefinition
+                                Width="750"    
+                            />
+                            <ColumnDefinition
+                                Width="250"
+                            />
+                            <ColumnDefinition
+                                Width="150"    
+                            />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition
+                                Height="35"    
+                            />
+                        </Grid.RowDefinitions>
+                        <materialDesign:PackIcon
+                            Kind="Star" 
+                            Grid.Row="0"
+                            Grid.Column="0"
                         />
-                        <ColumnDefinition
-                            Width="25"    
+                        <materialDesign:PackIcon
+                            Kind="Attachment" 
+                            Grid.Row="0"
+                            Grid.Column="1"
                         />
-                        <ColumnDefinition
-                            Width="750"    
+                        <TextBlock
+                            Text="Тема"
+                            Grid.Row="0"
+                            Grid.Column="2"
                         />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition
-                            Height="35"    
+                        <TextBlock
+                            Text="Получатели"
+                            Grid.Row="0"
+                            Grid.Column="3"
                         />
-                    </Grid.RowDefinitions>
-                    <materialDesign:PackIcon
-                        Kind="Star" 
-                        Grid.Row="0"
-                        Grid.Column="0"
-                    />
-                    <materialDesign:PackIcon
-                        Kind="Attachment" 
-                        Grid.Row="0"
-                        Grid.Column="1"
-                    />
-                    <TextBlock
-                        Text="Тема"
-                        Grid.Row="0"
-                        Grid.Column="2"
-                    />
-                    <TextBlock
-                        Text="Получатели"
-                        Grid.Row="0"
-                        Grid.Column="3"
-                    />
-                    <TextBlock
-                        Text="Дата"
-                        Grid.Row="0"
-                        Grid.Column="4"
-                    />
-                </Grid>
+                        <TextBlock
+                            Text="Дата"
+                            TextAlignment="Center"
+                            Grid.Row="0"
+                            Grid.Column="4"
+                        />
+                    </Grid>
+                    <StackPanel
+                        x:Name="pages"
+                        Orientation="Horizontal"    
+                    >
+                        <ComboBox
+                            x:Name="pagesSelector"
+                            Width="125"
+                            SelectionChanged="UpdatePageHandler"
+                        />
+                    </StackPanel>
+                </StackPanel>
             </TabItem>
             <TabItem
                 Visibility="Collapsed"    
