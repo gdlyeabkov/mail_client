@@ -54,8 +54,9 @@ namespace MailClient
 
             if (client.IsAuthenticated)
             {
-                // client.Folders.Inbox.StartIdling(); // And continue to listen for more.  
                 client.Folders.Inbox.OnNewMessagesArrived += Inbox_OnNewMessagesArrived;
+                client.Folders.Inbox.StartIdling(); // And continue to listen for more.  
+                client.Behavior.NoopIssueTimeout = 5;
             }
             return folders;
         }
@@ -75,14 +76,14 @@ namespace MailClient
         public static Message[] MessageCollectionGetMessagesForFolder(string name, int subFolderIndex = 1)
         {
             var clientFolders = client.Folders;
-            var messages = clientFolders["INBOX"].Search("ALL", MessageFetchMode.ClientDefault, 15);
+            var messages = clientFolders["INBOX"].Search("ALL", MessageFetchMode.ClientDefault, 5);
             bool isGmailFolder = name == "[Gmail]";
             if (isGmailFolder)
             {
                 var gmailFolder = clientFolders["[Gmail]"];
                 var gmailSubFolders = gmailFolder.SubFolders;
                 Folder subFolder = gmailSubFolders[subFolderIndex];
-                messages = subFolder.Search("ALL", MessageFetchMode.ClientDefault, 15);
+                messages = subFolder.Search("ALL", MessageFetchMode.ClientDefault, 5);
             }
             return messages;
         }

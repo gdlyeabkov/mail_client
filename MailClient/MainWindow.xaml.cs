@@ -21,6 +21,8 @@ using System.Windows.Threading;
 using ImapX.Enums;
 using System.Web.Script.Serialization;
 using System.IO;
+using System.Diagnostics;
+using System.Windows.Media.Effects;
 // using System.Windows.Forms;
 
 namespace MailClient
@@ -88,7 +90,7 @@ namespace MailClient
                     foreach (Folder subfolder in subFolders)
                     {
                         
-                        Message[] messages = subfolder.Search("ALL", MessageFetchMode.ClientDefault, 15);
+                        Message[] messages = subfolder.Search("ALL", MessageFetchMode.ClientDefault, 5);
 
                         string subFolderTitle = subfolder.Name;
                         StackPanel subFoldersItem = new StackPanel();
@@ -334,6 +336,22 @@ namespace MailClient
                             Grid.SetColumn(dateLabel, 4);
                         }
                     }
+
+                    CheckBox checkBox = new CheckBox();
+                    checkBox.Click += MessageToggledHandler;
+                    isSearchNotExists = search == "";
+                    isSetSearch = search != "" && subject.Contains(search);
+                    isSearchMatch = isSearchNotExists || isSetSearch;
+                    if (isSearchMatch)
+                    {
+                        if (isMsgMatch)
+                        {
+                            messages.Children.Add(checkBox);
+                            Grid.SetRow(checkBox, countMessages - 1);
+                            Grid.SetColumn(checkBox, 5);
+                        }
+                    }
+
                     int msgNum = msgIndex + 1;
                     double remainder = msgNum % 5;
                     bool isLastMsgOfPage = remainder == 0;
@@ -363,6 +381,7 @@ namespace MailClient
                     pagesSelector.SelectedIndex = 0;
                     isPagesSelectorInit = true;
                 }
+                actionBar.DataContext = ((Message[])(messageCollection));
             };
         }
 
@@ -632,6 +651,334 @@ namespace MailClient
         {
             currentMsgIndex = msgIndex;
             OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        public void MessageToggledHandler(object sender, RoutedEventArgs e)
+        {
+            MessageToggled();
+        }
+
+        public void MessageToggled ()
+        {
+            bool isSelectedCheckBoxFound = false;
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        isSelectedCheckBoxFound = true;
+                        break;
+                    }
+                }
+            }
+            if (isSelectedCheckBoxFound)
+            {
+                actionBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                actionBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void RemoveMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            RemoveMessages();
+        }
+
+        public void RemoveMessages ()
+        {
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        int rowIndex = Grid.GetRow(messagesItem);
+                        int messageIndex = rowIndex - 1;
+                        object actionBarData = actionBar.DataContext;
+                        Message[] messageCollection = ((Message[])(actionBarData));
+                        ImapClient mailClient = ImapService.client;
+                        CommonFolderCollection mailClientFolders = mailClient.Folders;
+                        Folder trashFolder = mailClientFolders.Trash;
+                        bool isRemoved = messageCollection[messageIndex].MoveTo(trashFolder);
+                        bool isNotRemoved = !isRemoved;
+                        if (isNotRemoved)
+                        {
+                            MessageBox.Show("Не удалось удалить сообщение", "Ошибка");
+                        }
+                    }
+                }
+            }
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void RefreshMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            RefreshMessages();
+        }
+
+        public void RefreshMessages()
+        {
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void MoveToSpamMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            MoveToSpamMessages();
+        }
+
+        public void MoveToSpamMessages()
+        {
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        int rowIndex = Grid.GetRow(messagesItem);
+                        int messageIndex = rowIndex - 1;
+                        object actionBarData = actionBar.DataContext;
+                        Message[] messageCollection = ((Message[])(actionBarData));
+                        ImapClient mailClient = ImapService.client;
+                        CommonFolderCollection mailClientFolders = mailClient.Folders;
+                        Folder spamFolder = mailClientFolders.Junk;
+                        bool isRemoved = messageCollection[messageIndex].MoveTo(spamFolder);
+                        bool isNotRemoved = !isRemoved;
+                        if (isNotRemoved)
+                        {
+                            MessageBox.Show("Не удалось переместить сообщение в спам", "Ошибка");
+                        }
+                    }
+                }
+            }
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void ArchiveMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            ArchiveMessages();
+        }
+
+        public void ArchiveMessages ()
+        {
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        int rowIndex = Grid.GetRow(messagesItem);
+                        int messageIndex = rowIndex - 1;
+                        object actionBarData = actionBar.DataContext;
+                        Message[] messageCollection = ((Message[])(actionBarData));
+                        ImapClient mailClient = ImapService.client;
+                        CommonFolderCollection mailClientFolders = mailClient.Folders;
+                        Folder archiveFolder = mailClientFolders.Drafts;
+                        bool isMoved = messageCollection[messageIndex].MoveTo(archiveFolder);
+                        bool isNotMoved = !isMoved;
+                        if (isNotMoved)
+                        {
+                            MessageBox.Show("Не удалось архивировать сообщение", "Ошибка");
+                        }
+                    }
+                }
+            }
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void MoveToInboxMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            MoveToInboxMessages();
+        }
+
+        public void MoveToInboxMessages()
+        {
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        int rowIndex = Grid.GetRow(messagesItem);
+                        int messageIndex = rowIndex - 1;
+                        object actionBarData = actionBar.DataContext;
+                        Message[] messageCollection = ((Message[])(actionBarData));
+                        ImapClient mailClient = ImapService.client;
+                        CommonFolderCollection mailClientFolders = mailClient.Folders;
+                        Folder inboxFolder = mailClientFolders.Inbox;
+                        bool isMoved = messageCollection[messageIndex].MoveTo(inboxFolder);
+                        bool isNotMoved = !isMoved;
+                        if (isNotMoved)
+                        {
+                            MessageBox.Show("Не удалось переместить сообщение во входящие", "Ошибка");
+                        }
+                    }
+                }
+            }
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void MoveToImportantMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            MoveToImportantMessages();
+        }
+
+        public void MoveToImportantMessages()
+        {
+            foreach (UIElement messagesItem in messages.Children)
+            {
+                bool isCheckBox = messagesItem is CheckBox;
+                if (isCheckBox)
+                {
+
+                    CheckBox checkBox = messagesItem as CheckBox;
+                    object checkedState = checkBox.IsChecked;
+                    bool isCheckBoxChecked = ((bool)(checkedState));
+                    if (isCheckBoxChecked)
+                    {
+                        int rowIndex = Grid.GetRow(messagesItem);
+                        int messageIndex = rowIndex - 1;
+                        object actionBarData = actionBar.DataContext;
+                        Message[] messageCollection = ((Message[])(actionBarData));
+                        ImapClient mailClient = ImapService.client;
+                        CommonFolderCollection mailClientFolders = mailClient.Folders;
+                        Folder importantFolder = mailClientFolders.Important;
+                        bool isMoved = messageCollection[messageIndex].MoveTo(importantFolder);
+                        bool isNotMoved = !isMoved;
+                        if (isNotMoved)
+                        {
+                            MessageBox.Show("Не удалось переместить сообщение в важные", "Ошибка");
+                        }
+                    }
+                }
+            }
+            OutputMessages(currentFolder, currentSubFolder);
+        }
+
+        private void SmartSelectMessagesHandler(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox smartSelector = ((ComboBox)(sender));
+            int selectedIndex = smartSelector.SelectedIndex;
+            SmartSelectMessages(selectedIndex);
+        }
+
+        public void SmartSelectMessages (int selectedIndex)
+        {
+            bool isAllMessages = selectedIndex == 0;
+            bool isNoOneMessages = selectedIndex == 1;
+            if (isAllMessages)
+            {
+                foreach (UIElement messagesItem in messages.Children)
+                {
+                    bool isCheckBox = messagesItem is CheckBox;
+                    if (isCheckBox)
+                    {
+                        CheckBox checkBox = messagesItem as CheckBox;
+                        checkBox.IsChecked = true;
+                    }
+                }
+            }
+            else if (isNoOneMessages)
+            {
+                foreach (UIElement messagesItem in messages.Children)
+                {
+                    bool isCheckBox = messagesItem is CheckBox;
+                    if (isCheckBox)
+                    {
+                        CheckBox checkBox = messagesItem as CheckBox;
+                        checkBox.IsChecked = false;
+                    }
+                }
+            }
+            MessageToggled();
+        }
+
+        private void OpenMoveToMessagesHandler(object sender, RoutedEventArgs e)
+        {
+            Button btn = ((Button)(sender));
+            OpenMoveToMessages(btn);
+        }
+
+        public void OpenMoveToMessages(Button btn)
+        {
+            moveToMessagesPopup.IsOpen = true;
+        }
+
+        public void HideMoveToMessagesPopup ()
+        {
+            moveToMessagesPopup.IsOpen = false;
+        }
+
+        private void MoveToSpamMessagesFromMenuHandler(object sender, MouseButtonEventArgs e)
+        {
+            MoveToSpamMessages();
+            HideMoveToMessagesPopup();
+        }
+
+        private void MoveToTrashMessagesFromMenuHandler(object sender, MouseButtonEventArgs e)
+        {
+            RemoveMessages();
+            HideMoveToMessagesPopup();
+        }
+
+        private void FilterMoveToMessagesItemsHandler (object sender, TextChangedEventArgs e)
+        {
+            FilterMoveToMessagesItems();
+        }
+
+        private void FilterMoveToMessagesItems ()
+        {
+            string moveToMessagesPopupFilterBoxTextContent = moveToMessagesPopupFilterBox.Text;
+            string moveToMessagesPopupFilterBoxIgnoreCaseTextContent = moveToMessagesPopupFilterBoxTextContent.ToLower();
+            string spamLabelContent = "Спам";
+            string spamLabelIgnoreCaseContent = spamLabelContent.ToLower();
+            bool isSpamMatch = spamLabelIgnoreCaseContent.Contains(moveToMessagesPopupFilterBoxIgnoreCaseTextContent);
+            if (isSpamMatch)
+            {
+                moveToMessagesPopupSpamItem.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                moveToMessagesPopupSpamItem.Visibility = Visibility.Collapsed;
+            }
+            string trashLabelContent = "Корзина";
+            string trashLabelIgnoreCaseContent = trashLabelContent.ToLower();
+            bool isTrashMatch = trashLabelIgnoreCaseContent.Contains(moveToMessagesPopupFilterBoxIgnoreCaseTextContent);
+            if (isTrashMatch)
+            {
+                moveToMessagesPopupTrashItem.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                moveToMessagesPopupTrashItem.Visibility = Visibility.Collapsed;
+            }
         }
 
     }

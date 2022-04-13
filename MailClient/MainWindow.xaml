@@ -69,6 +69,142 @@
                     x:Name="messagesWrap"    
                     Visibility="Collapsed"
                 >
+                    <StackPanel
+                        Orientation="Horizontal"
+                    >
+                        <ComboBox
+                            Margin="5"
+                            Width="125"
+                            SelectionChanged="SmartSelectMessagesHandler"    
+                        >
+                            <ComboBoxItem
+                                Content="Все"    
+                            />
+                            <ComboBoxItem
+                                Content="Ни одного"    
+                            />
+                        </ComboBox>
+                        <Button
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="Обновить"
+                            Click="RefreshMessagesHandler"
+                        />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="actionBar"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed"
+                    >
+                        <Button
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="Удалить"
+                            Click="RemoveMessagesHandler"
+                        />
+                        <Button
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="В спам"
+                            Click="MoveToSpamMessagesHandler"
+                        />
+                        <Button
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="Архивировать"
+                            Click="ArchiveMessagesHandler"
+                        />
+                        <Button
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="Переместить в важные"
+                            Click="MoveToImportantMessagesHandler"
+                        />
+                        <Popup
+                            x:Name="moveToMessagesPopup"
+                            IsOpen="False"
+                            PlacementTarget="{ Binding moveToMessagesBtn }"
+                            Width="200"
+                            Height="275"
+                            StaysOpen="False"
+                            Placement="Mouse"
+                        >
+                            <Popup.Style>
+                                <Style TargetType="Popup">
+                                    <Style.Setters>
+                                        <Setter
+                                            Property="Popup.Effect"
+                                        >
+                                            <Setter.Value>
+                                                <DropShadowEffect
+                                                    ShadowDepth="4"
+                                                    BlurRadius="4"
+                                                    Opacity="0.5"
+                                                    Color="Black"
+                                                    Direction="330"
+                                                />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style.Setters>
+                                </Style>
+                            </Popup.Style>
+                            <Popup.Child>
+                                <StackPanel
+                                    Background="AliceBlue"    
+                                >
+                                    <TextBlock
+                                        Margin="15 15"
+                                        Text="Переместить в"    
+                                    />
+                                    <TextBox
+                                        x:Name="moveToMessagesPopupFilterBox"
+                                        TextChanged="FilterMoveToMessagesItemsHandler"
+                                        Margin="15 5"
+                                    />
+                                    <StackPanel
+                                        x:Name="moveToMessagesPopupSpamItem"
+                                        MouseLeftButtonDown="MoveToSpamMessagesFromMenuHandler"
+                                    >
+                                        <TextBlock
+                                            Margin="15 5"
+                                            Text="Спам"    
+                                        />
+                                    </StackPanel>
+                                    <StackPanel
+                                        x:Name="moveToMessagesPopupTrashItem"
+                                        MouseLeftButtonDown="MoveToTrashMessagesFromMenuHandler"
+                                    >
+                                        <TextBlock
+                                            Margin="15 5"
+                                            Text="Корзина"    
+                                        />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Popup.Child>
+                        </Popup>
+                        <Button
+                            x:Name="moveToMessagesBtn"
+                            Width="175"
+                            Margin="5"
+                            Height="25"
+                            Content="Переместить в"
+                            Click="OpenMoveToMessagesHandler"
+                        >
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem
+                                        Header="Спам"
+                                    />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <!---->
+                        </Button>
+                    </StackPanel>
                     <Grid
                         x:Name="messages"
                     >
@@ -88,6 +224,7 @@
                             <ColumnDefinition
                                 Width="150"    
                             />
+                            <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition
